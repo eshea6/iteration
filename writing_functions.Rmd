@@ -229,5 +229,18 @@ lotr_tidy =
   select(movie, everything()) 
 ```
 
+## Scoping
 
+```{r}
+f = function(x) {
+  z = x + y
+  z
+}
 
+x = 1
+y = 2
+
+f(x = y)
+```
+
+Weird!!

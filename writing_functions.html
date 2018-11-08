@@ -534,6 +534,20 @@ lotr_tidy =
     lotr_load_and_tidy(&quot;./data/LotR_Words.xlsx&quot;, &quot;J3:L6&quot;, &quot;return_king&quot;)) %&gt;%
   select(movie, everything()) </code></pre>
 </div>
+<div id="scoping" class="section level2">
+<h2>Scoping</h2>
+<pre class="r"><code>f = function(x) {
+  z = x + y
+  z
+}
+
+x = 1
+y = 2
+
+f(x = y)
+## [1] 4</code></pre>
+<p>Weird!!</p>
+</div>
 
 
 
