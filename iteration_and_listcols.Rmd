@@ -155,6 +155,93 @@ vec_urls = str_c(url_base, 1:5)
 dynamite_reviews = map_df(vec_urls, read_page_reviews)
 ```
 
+## List columns...
+
+```{r}
+library(rnoaa)
+
+weather = 
+  meteo_pull_monitors(c("USW00094728", "USC00519397", "USS0023B17S"),
+                      var = c("PRCP", "TMIN", "TMAX"), 
+                      date_min = "2016-01-01",
+                      date_max = "2016-12-31") %>%
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY", 
+                      USC00519397 = "Waikiki_HA",
+                      USS0023B17S = "Waterhole_WA"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) %>%
+  select(name, id, everything())
+```
+
+
+```{r}
+# centralpark = weather %>% filter(...)
+
+weather_nest = weather %>% 
+  nest(date:tmin)
+```
+
+```{r}
+weather_nest %>% 
+  pull(name)
+
+weather_nest %>% 
+  pull(id)
+
+weather_nest %>% 
+  pull(data)
+```
+
+Unnesting...
+
+```{r}
+weather_nest %>% 
+  unnest
+```
+
+Look at list column elements
+
+```{r}
+weather_nest$data[[1]] %>% 
+  skimr::skim()
+```
+
+Fit a location-specific regression...
+
+```{r}
+lm(tmax ~ tmin, data = weather_nest$data[[1]])
+lm(tmax ~ tmin, data = weather_nest$data[[2]])
+lm(tmax ~ tmin, data = weather_nest$data[[3]])
+```
+
+Write a function!!!
+
+```{r}
+weather_lm = function(df) {
+  
+  lm(tmax ~ tmin, data = df)
+  
+}
+```
+
+```{r}
+weather_lm(df = weather_nest$data[[1]])
+```
+
+```{r}
+map(weather_nest$data, weather_lm)
+```
+
+Save output as a new list column...
+
+```{r}
+weather_nest %>% 
+  mutate(lm_results = map(data, weather_lm))
+```
+
+
+
 
 
 

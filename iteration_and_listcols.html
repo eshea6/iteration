@@ -333,7 +333,7 @@ l
 ## 
 ## $summary
 ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
-## -2.87601 -0.78248 -0.04192 -0.05736  0.64587  4.27621
+## -3.53732 -0.64801 -0.02555  0.01476  0.69235  3.21148
 
 l[[2]]
 ##      [,1] [,2] [,3] [,4]
@@ -353,9 +353,9 @@ is.list(df)
 ## [1] TRUE
 
 df[[1]]
-##  [1] 2.582072 2.191612 3.843839 4.040096 3.734523 3.732469 3.901443
-##  [8] 2.758466 1.614709 1.673185 4.060477 2.985627 5.454278 3.250883
-## [15] 3.521569 3.033904 1.793867 5.568476 3.815832 3.540454</code></pre>
+##  [1] 3.006361 3.165973 3.464482 3.115224 2.862156 4.307943 4.111299
+##  [8] 2.944415 4.970745 2.184899 4.531091 3.922583 3.633818 3.619334
+## [15] 3.721628 3.563628 2.003265 2.645718 1.692016 3.890545</code></pre>
 <p>Let’s get a function.</p>
 <pre class="r"><code>mean_and_sd = function(x) {
   
@@ -378,22 +378,22 @@ df[[1]]
 ## # A tibble: 1 x 2
 ##    mean    sd
 ##   &lt;dbl&gt; &lt;dbl&gt;
-## 1  3.35  1.08
+## 1  3.37 0.843
 mean_and_sd(df[[2]])
 ## # A tibble: 1 x 2
-##     mean    sd
-##    &lt;dbl&gt; &lt;dbl&gt;
-## 1 -0.307  4.67
+##    mean    sd
+##   &lt;dbl&gt; &lt;dbl&gt;
+## 1  1.09  5.61
 mean_and_sd(df[[3]])
 ## # A tibble: 1 x 2
 ##    mean    sd
 ##   &lt;dbl&gt; &lt;dbl&gt;
-## 1  10.1 0.229
+## 1 10.00 0.249
 mean_and_sd(df[[4]])
 ## # A tibble: 1 x 2
 ##    mean    sd
 ##   &lt;dbl&gt; &lt;dbl&gt;
-## 1 -3.21 0.690</code></pre>
+## 1 -2.89 0.659</code></pre>
 <p>Write a for loop!</p>
 <pre class="r"><code>output = vector(&quot;list&quot;, length = 4)
 
@@ -411,25 +411,25 @@ output
 ## # A tibble: 1 x 2
 ##    mean    sd
 ##   &lt;dbl&gt; &lt;dbl&gt;
-## 1  3.35  1.08
+## 1  3.37 0.843
 ## 
 ## [[2]]
 ## # A tibble: 1 x 2
-##     mean    sd
-##    &lt;dbl&gt; &lt;dbl&gt;
-## 1 -0.307  4.67
+##    mean    sd
+##   &lt;dbl&gt; &lt;dbl&gt;
+## 1  1.09  5.61
 ## 
 ## [[3]]
 ## # A tibble: 1 x 2
 ##    mean    sd
 ##   &lt;dbl&gt; &lt;dbl&gt;
-## 1  10.1 0.229
+## 1 10.00 0.249
 ## 
 ## [[4]]
 ## # A tibble: 1 x 2
 ##    mean    sd
 ##   &lt;dbl&gt; &lt;dbl&gt;
-## 1 -3.21 0.690</code></pre>
+## 1 -2.89 0.659</code></pre>
 </div>
 <div id="map-statements" class="section level2">
 <h2>map statements</h2>
@@ -476,6 +476,198 @@ url_base = &quot;https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp
 vec_urls = str_c(url_base, 1:5)
 
 dynamite_reviews = map_df(vec_urls, read_page_reviews)</code></pre>
+</div>
+<div id="list-columns" class="section level2">
+<h2>List columns…</h2>
+<pre class="r"><code>library(rnoaa)
+
+weather = 
+  meteo_pull_monitors(c(&quot;USW00094728&quot;, &quot;USC00519397&quot;, &quot;USS0023B17S&quot;),
+                      var = c(&quot;PRCP&quot;, &quot;TMIN&quot;, &quot;TMAX&quot;), 
+                      date_min = &quot;2016-01-01&quot;,
+                      date_max = &quot;2016-12-31&quot;) %&gt;%
+  mutate(
+    name = recode(id, USW00094728 = &quot;CentralPark_NY&quot;, 
+                      USC00519397 = &quot;Waikiki_HA&quot;,
+                      USS0023B17S = &quot;Waterhole_WA&quot;),
+    tmin = tmin / 10,
+    tmax = tmax / 10) %&gt;%
+  select(name, id, everything())</code></pre>
+<pre class="r"><code># centralpark = weather %&gt;% filter(...)
+
+weather_nest = weather %&gt;% 
+  nest(date:tmin)</code></pre>
+<pre class="r"><code>weather_nest %&gt;% 
+  pull(name)
+## [1] &quot;CentralPark_NY&quot; &quot;Waikiki_HA&quot;     &quot;Waterhole_WA&quot;
+
+weather_nest %&gt;% 
+  pull(id)
+## [1] &quot;USW00094728&quot; &quot;USC00519397&quot; &quot;USS0023B17S&quot;
+
+weather_nest %&gt;% 
+  pull(data)
+## [[1]]
+## # A tibble: 366 x 4
+##    date        prcp  tmax  tmin
+##    &lt;date&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 2016-01-01     0   5.6   1.1
+##  2 2016-01-02     0   4.4   0  
+##  3 2016-01-03     0   7.2   1.7
+##  4 2016-01-04     0   2.2  -9.9
+##  5 2016-01-05     0  -1.6 -11.6
+##  6 2016-01-06     0   5    -3.8
+##  7 2016-01-07     0   7.8  -0.5
+##  8 2016-01-08     0   7.8  -0.5
+##  9 2016-01-09     0   8.3   4.4
+## 10 2016-01-10   457  15     4.4
+## # ... with 356 more rows
+## 
+## [[2]]
+## # A tibble: 366 x 4
+##    date        prcp  tmax  tmin
+##    &lt;date&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 2016-01-01     0  29.4  16.7
+##  2 2016-01-02     0  28.3  16.7
+##  3 2016-01-03     0  28.3  16.7
+##  4 2016-01-04     0  28.3  16.1
+##  5 2016-01-05     0  27.2  16.7
+##  6 2016-01-06     0  27.2  20  
+##  7 2016-01-07    46  27.8  18.3
+##  8 2016-01-08     3  28.3  17.8
+##  9 2016-01-09     8  27.8  19.4
+## 10 2016-01-10     3  28.3  18.3
+## # ... with 356 more rows
+## 
+## [[3]]
+## # A tibble: 366 x 4
+##    date        prcp  tmax  tmin
+##    &lt;date&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 2016-01-01     0   1.7  -5.9
+##  2 2016-01-02    25  -0.1  -6  
+##  3 2016-01-03     0  -5   -10  
+##  4 2016-01-04    25   0.3  -9.8
+##  5 2016-01-05    25   1.9  -1.8
+##  6 2016-01-06    25   1.4  -2.6
+##  7 2016-01-07     0   1.4  -3.9
+##  8 2016-01-08     0   1.1  -4  
+##  9 2016-01-09     0   1.4  -4.5
+## 10 2016-01-10     0   2.3  -3.8
+## # ... with 356 more rows</code></pre>
+<p>Unnesting…</p>
+<pre class="r"><code>weather_nest %&gt;% 
+  unnest
+## # A tibble: 1,098 x 6
+##    name           id          date        prcp  tmax  tmin
+##    &lt;chr&gt;          &lt;chr&gt;       &lt;date&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 CentralPark_NY USW00094728 2016-01-01     0   5.6   1.1
+##  2 CentralPark_NY USW00094728 2016-01-02     0   4.4   0  
+##  3 CentralPark_NY USW00094728 2016-01-03     0   7.2   1.7
+##  4 CentralPark_NY USW00094728 2016-01-04     0   2.2  -9.9
+##  5 CentralPark_NY USW00094728 2016-01-05     0  -1.6 -11.6
+##  6 CentralPark_NY USW00094728 2016-01-06     0   5    -3.8
+##  7 CentralPark_NY USW00094728 2016-01-07     0   7.8  -0.5
+##  8 CentralPark_NY USW00094728 2016-01-08     0   7.8  -0.5
+##  9 CentralPark_NY USW00094728 2016-01-09     0   8.3   4.4
+## 10 CentralPark_NY USW00094728 2016-01-10   457  15     4.4
+## # ... with 1,088 more rows</code></pre>
+<p>Look at list column elements</p>
+<pre class="r"><code>weather_nest$data[[1]] %&gt;% 
+  skimr::skim()
+## Skim summary statistics
+##  n obs: 366 
+##  n variables: 4 
+## 
+## ── Variable type:Date ───────────────────────────────────────────────────────────────────
+##  variable missing complete   n        min        max     median n_unique
+##      date       0      366 366 2016-01-01 2016-12-31 2016-07-01      366
+## 
+## ── Variable type:numeric ────────────────────────────────────────────────────────────────
+##  variable missing complete   n  mean    sd    p0   p25   p50  p75  p100
+##      prcp       0      366 366 29.3  78.66   0    0     0    10   587  
+##      tmax       0      366 366 18.13 10.02  -9.3 10    18.05 27.2  35.6
+##      tmin       0      366 366  9.91  9.18 -18.2  2.92  8.9  18.3  27.2
+##      hist
+##  ▇▁▁▁▁▁▁▁
+##  ▁▂▅▆▇▆▇▆
+##  ▁▁▃▇▇▅▇▅</code></pre>
+<p>Fit a location-specific regression…</p>
+<pre class="r"><code>lm(tmax ~ tmin, data = weather_nest$data[[1]])
+## 
+## Call:
+## lm(formula = tmax ~ tmin, data = weather_nest$data[[1]])
+## 
+## Coefficients:
+## (Intercept)         tmin  
+##       7.779        1.045
+lm(tmax ~ tmin, data = weather_nest$data[[2]])
+## 
+## Call:
+## lm(formula = tmax ~ tmin, data = weather_nest$data[[2]])
+## 
+## Coefficients:
+## (Intercept)         tmin  
+##      22.489        0.326
+lm(tmax ~ tmin, data = weather_nest$data[[3]])
+## 
+## Call:
+## lm(formula = tmax ~ tmin, data = weather_nest$data[[3]])
+## 
+## Coefficients:
+## (Intercept)         tmin  
+##       6.851        1.245</code></pre>
+<p>Write a function!!!</p>
+<pre class="r"><code>weather_lm = function(df) {
+  
+  lm(tmax ~ tmin, data = df)
+  
+}</code></pre>
+<pre class="r"><code>weather_lm(df = weather_nest$data[[1]])
+## 
+## Call:
+## lm(formula = tmax ~ tmin, data = df)
+## 
+## Coefficients:
+## (Intercept)         tmin  
+##       7.779        1.045</code></pre>
+<pre class="r"><code>map(weather_nest$data, weather_lm)
+## [[1]]
+## 
+## Call:
+## lm(formula = tmax ~ tmin, data = df)
+## 
+## Coefficients:
+## (Intercept)         tmin  
+##       7.779        1.045  
+## 
+## 
+## [[2]]
+## 
+## Call:
+## lm(formula = tmax ~ tmin, data = df)
+## 
+## Coefficients:
+## (Intercept)         tmin  
+##      22.489        0.326  
+## 
+## 
+## [[3]]
+## 
+## Call:
+## lm(formula = tmax ~ tmin, data = df)
+## 
+## Coefficients:
+## (Intercept)         tmin  
+##       6.851        1.245</code></pre>
+<p>Save output as a new list column…</p>
+<pre class="r"><code>weather_nest %&gt;% 
+  mutate(lm_results = map(data, weather_lm))
+## # A tibble: 3 x 4
+##   name           id          data               lm_results
+##   &lt;chr&gt;          &lt;chr&gt;       &lt;list&gt;             &lt;list&gt;    
+## 1 CentralPark_NY USW00094728 &lt;tibble [366 × 4]&gt; &lt;S3: lm&gt;  
+## 2 Waikiki_HA     USC00519397 &lt;tibble [366 × 4]&gt; &lt;S3: lm&gt;  
+## 3 Waterhole_WA   USS0023B17S &lt;tibble [366 × 4]&gt; &lt;S3: lm&gt;</code></pre>
 </div>
 
 
