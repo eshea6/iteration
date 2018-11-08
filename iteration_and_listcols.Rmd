@@ -240,8 +240,32 @@ weather_nest %>%
   mutate(lm_results = map(data, weather_lm))
 ```
 
+## A couple final examples
 
+```{r}
+reviews = tibble(
+  page = 1:5,
+  url = str_c(url_base, page)
+) %>% 
+  mutate(reviews = map(url, read_page_reviews)) %>% 
+  unnest()
+```
 
+```{r}
+lotr_cell_ranges = 
+  tibble(
+    movie = c("fellowship_ring", "two_towers", "return_king"),
+    cells = c("B3:D6", "F3:H6", "J3:L6")
+  )
 
-
-
+lotr_tidy = 
+  lotr_cell_ranges %>% 
+  mutate(
+    word_data = map(cells, ~readxl::read_excel("./data/LotR_Words.xlsx", range = .x))
+  ) %>% 
+  unnest() %>% 
+  janitor::clean_names() %>% 
+  gather(key = sex, value = words, female:male) %>%
+  mutate(race = tolower(race)) %>% 
+  select(movie, everything(), -cells) 
+```
