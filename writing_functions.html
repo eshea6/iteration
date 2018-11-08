@@ -368,6 +368,76 @@ z_scores(x = unif_sample)
   
 }</code></pre>
 </div>
+<div id="multiple-outputs-mean-and-sd" class="section level2">
+<h2>Multiple outputs (mean and sd)</h2>
+<pre class="r"><code>mean_and_sd = function(x) {
+  
+  if (!is.numeric(x)) {
+    stop(&quot;Argument x should be numeric&quot;)
+  } else if (length(x) == 1) {
+    stop(&quot;Cannot be computed for length 1 vectors&quot;)
+  }
+  
+  mean_x = mean(x)
+  sd_x = sd(x)
+
+  tibble(
+    mean = mean_x, 
+    sd = sd_x
+  )
+}
+
+mean_and_sd(unif_sample)
+## # A tibble: 1 x 2
+##    mean    sd
+##   &lt;dbl&gt; &lt;dbl&gt;
+## 1 0.502 0.270</code></pre>
+</div>
+<div id="multiple-inputs" class="section level2">
+<h2>Multiple inputs</h2>
+<p>Look at simple linear regression!</p>
+<pre class="r"><code>sim_data = tibble(
+  x = rnorm(30, mean = 1, sd = 1),
+  y = 2 + 3 * x + rnorm(30, 0, 1)
+)
+
+ls_fit = lm(y ~ x, data = sim_data)
+  
+beta0_hat = coef(ls_fit)[1]
+beta1_hat = coef(ls_fit)[2]</code></pre>
+<p>Write a function that simulates data, fits the model, and returns the estimates. Inputs are sample size and true coefficients.</p>
+<pre class="r"><code>sim_regression = function(n, beta0 = 2, beta1 = 3) {
+  
+  sim_data = tibble(
+    x = rnorm(n, mean = 1, sd = 1),
+    y = beta0 + beta1 * x + rnorm(n, 0, 1)
+  )
+  
+  ls_fit = lm(y ~ x, data = sim_data)
+  
+  tibble(
+    beta0_hat = coef(ls_fit)[1],
+    beta1_hat = coef(ls_fit)[2]
+  )
+}</code></pre>
+<pre class="r"><code>sim_regression(n = 3000, beta0 = 0, beta1 = -1)
+## # A tibble: 1 x 2
+##   beta0_hat beta1_hat
+##       &lt;dbl&gt;     &lt;dbl&gt;
+## 1   -0.0268    -0.985
+
+sim_regression(n = 3000)
+## # A tibble: 1 x 2
+##   beta0_hat beta1_hat
+##       &lt;dbl&gt;     &lt;dbl&gt;
+## 1      2.02      2.98
+
+sim_regression(n = 300, beta0 = 2, beta = 5)
+## # A tibble: 1 x 2
+##   beta0_hat beta1_hat
+##       &lt;dbl&gt;     &lt;dbl&gt;
+## 1      2.03      4.98</code></pre>
+</div>
 
 
 
